@@ -18,6 +18,14 @@ This pack allows you to use an optimized version of Lens Flares in mobile VR (UR
 
 ![How to create VR Lens Flare Data asset](https://raw.githubusercontent.com/aleverdes/unity-urp-vr-lens-flare/master/README%20Assets/How%20to%20create%20VR%20Lens%20Flare%20Data.jpg)
 
+# Limitations
+
+This package version is based only on image lens flares data.
+
+Compatibility with standard Lens Flare Data (URP) and the ability to use procedurally generated lens flare parts will be in future versions.
+
+This version does not work on occlusion, but on raycast to allow you to work in mobile VR with 72 FPS with any number of lens flare sources. You can configure the raycast mask in the add renderer feature menu in your URP asset.
+
 # Screenshots
 
 ![VR Lens Flare Screenshot 1](https://raw.githubusercontent.com/aleverdes/unity-urp-vr-lens-flare/master/README%20Assets/VR%20Lens%20Flare%20Screenshot%201.jpg)
