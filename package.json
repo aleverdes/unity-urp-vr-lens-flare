@@ -1,0 +1,20 @@
+{
+  "name": "com.aleverdes.vr-lens-flare",
+  "author": "AleVerDes",
+  "displayName": "VR Lens Flare",
+  "description": "Unity URP implementation of Lens Flare optimized for mobile VR.",
+  "unity": "2018.4",
+  "version": "1.0.0",
+  "keywords": [
+    "VR",
+    "Virtual Reality",
+    "Lens Flare",
+    "LensFlare",
+    "URP"
+  ],
+  "dependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/aleverdes/unity-urp-vr-lens-flare.git"
+  }
+}
