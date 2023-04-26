@@ -10,13 +10,9 @@ This pack allows you to use an optimized version of Lens Flares in mobile VR (UR
 
 ![How to add URP VR Lens Flare renderer feature](https://raw.githubusercontent.com/aleverdes/unity-urp-vr-lens-flare/master/README%20Assets/How%20to%20add%20VR%20Lens%20Flare%20renderer%20feature.jpg)
 
-2. Attach the Lens Flare (VR) component to your object or light source.
+2. Attach the Lens Flare (VR) component to your object or light source and add Lens Flare Data.
 
 ![How to add VR Lens flare component to game object](https://raw.githubusercontent.com/aleverdes/unity-urp-vr-lens-flare/master/README%20Assets/How%20to%20add%20VR%20Lens%20Flare%20component%20to%20game%20object.jpg)
-
-3. Create and configure or take a ready-made asset with lens flare settings. Ready-made lens flare can be found in the Presets folder.
-
-![How to create VR Lens Flare Data asset](https://raw.githubusercontent.com/aleverdes/unity-urp-vr-lens-flare/master/README%20Assets/How%20to%20create%20VR%20Lens%20Flare%20Data.jpg)
 
 # Limitations
 
