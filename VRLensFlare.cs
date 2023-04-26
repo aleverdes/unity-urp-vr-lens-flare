@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace AleVerDes.VRLensFlares
 {
@@ -10,7 +11,7 @@ namespace AleVerDes.VRLensFlares
         /// <summary>
         /// Lens flare asset used on this component
         /// </summary>
-        public VRLensFlareData LensFlareData;
+        public LensFlareDataSRP LensFlareData;
 
         /// <summary>
         /// Intensity

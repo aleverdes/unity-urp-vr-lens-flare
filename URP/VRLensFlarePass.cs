@@ -134,15 +134,20 @@ namespace AleVerDes.VRLensFlares
                 var dir = (_camera.transform.position - lensFlare.transform.position).normalized;
                 var screenPosZ = VRLensFlareCore.WorldToViewport(Camera.MonoOrStereoscopicEye.Mono, _camera, !isDirLight, true, _cameraMatrix, worldPosition + dir * 0.05f);
 
-                foreach (var element in lensFlare.LensFlareData.Elements)
+                foreach (var element in lensFlare.LensFlareData.elements)
                 {
-                    if (!element.Visible || !element.LensFlareTexture || element.LocalIntensity < float.Epsilon || element.SizeXY.magnitude < float.Epsilon)
+                    if (!element.visible
+                        || element.flareType != SRPLensFlareType.Image 
+                        || !element.lensFlareTexture 
+                        || element.localIntensity < float.Epsilon 
+                        || element.sizeXY.x < float.Epsilon
+                        || element.sizeXY.y < float.Epsilon)
                     {
                         continue;
                     }
 
                     var colorModulation = globalColorModulation;
-                    if (light && element.ModulateByLightColor)
+                    if (light && element.modulateByLightColor)
                     {
                         if (light.useColorTemperature)
                         {
@@ -154,69 +159,64 @@ namespace AleVerDes.VRLensFlares
                         }
                     }
 
-                    var curColor = colorModulation;
                     var screenPos = new Vector2(2.0f * viewportPosition.x - 1.0f, 1.0f - 2.0f * viewportPosition.y);
                     var radPos = new Vector2(Mathf.Abs(screenPos.x), Mathf.Abs(screenPos.y));
-                    var radius = Mathf.Max(radPos.x, radPos.y); // l1 norm (instead of l2 norm)
+                    var radius = Mathf.Max(radPos.x, radPos.y);
                     var radialsScaleRadius = lensFlare.RadialScreenAttenuationCurve.length > 0 ? lensFlare.RadialScreenAttenuationCurve.Evaluate(radius) : 1.0f;
 
-                    var currentIntensity = lensFlare.Intensity * element.LocalIntensity * radialsScaleRadius * distanceAttenuation;
+                    var currentIntensity = lensFlare.Intensity * element.localIntensity * radialsScaleRadius * distanceAttenuation;
 
                     if (currentIntensity <= 0.0f)
                     {
                         continue;
                     }
 
-                    var texture = element.LensFlareTexture;
-                    var usedAspectRatio = element.PreserveAspectRatio ? texture.height / (float)texture.width : 1.0f;
+                    var texture = element.lensFlareTexture;
+                    var usedAspectRatio = element.preserveAspectRatio ? texture.height / (float)texture.width : 1.0f;
 
-                    var rotation = element.Rotation;
+                    var rotation = element.rotation;
 
                     Vector2 elementSize;
-                    if (element.PreserveAspectRatio)
+                    if (element.preserveAspectRatio)
                     {
-                        if (usedAspectRatio >= 1.0f)
-                        {
-                            elementSize = new Vector2(element.SizeXY.x / usedAspectRatio, element.SizeXY.y);
-                        }
-                        else
-                        {
-                            elementSize = new Vector2(element.SizeXY.x, element.SizeXY.y * usedAspectRatio);
-                        }
+                        elementSize = usedAspectRatio >= 1f 
+                            ? new Vector2(element.sizeXY.x / usedAspectRatio, element.sizeXY.y) 
+                            : new Vector2(element.sizeXY.x, element.sizeXY.y * usedAspectRatio);
                     }
                     else
                     {
-                        elementSize = new Vector2(element.SizeXY.x, element.SizeXY.y);
+                        elementSize = element.sizeXY;
                     }
 
-                    var combinedScale = scaleByDistance * 0.1f * element.UniformScale * lensFlare.Scale;
+                    var combinedScale = scaleByDistance * 0.1f * element.uniformScale * lensFlare.Scale;
                     var localSize = elementSize * combinedScale;
 
-                    curColor *= element.Tint;
-                    curColor *= currentIntensity;
-                    curColor *= 1f - lensFlare.OcclusionProgress;
+                    var currentColor = colorModulation;
+                    currentColor *= element.tint;
+                    currentColor *= currentIntensity;
+                    currentColor *= 1f - lensFlare.OcclusionProgress;
 
-                    var angularOffset = SystemInfo.graphicsUVStartsAtTop ? element.AngularOffset : -element.AngularOffset;
+                    var angularOffset = SystemInfo.graphicsUVStartsAtTop ? element.angularOffset : -element.angularOffset;
                     var globalCos0 = Mathf.Cos(-angularOffset * Mathf.Deg2Rad);
                     var globalSin0 = Mathf.Sin(-angularOffset * Mathf.Deg2Rad);
 
-                    var position = 2.0f * element.Position;
+                    var position = 2.0f * element.position;
 
                     var leftEyePosition = VRLensFlareCore.GetScreenPosition(Camera.MonoOrStereoscopicEye.Left, lensFlare, _camera, true, _leftEyeMatrix);
                     var rightEyePosition = VRLensFlareCore.GetScreenPosition(Camera.MonoOrStereoscopicEye.Right, lensFlare, _camera, true, _rightEyeMatrix);
 
                     var rayOff = VRLensFlareCore.GetLensFlareRayOffset(screenPos, position, globalCos0, globalSin0);
-                    if (element.EnableRadialDistortion)
+                    if (element.enableRadialDistortion)
                     {
                         var rayOff0 = VRLensFlareCore.GetLensFlareRayOffset(screenPos, 0.0f, globalCos0, globalSin0);
-                        localSize = ComputeLocalSize(rayOff, rayOff0, localSize, element.DistortionCurve);
+                        localSize = ComputeLocalSize(rayOff, rayOff0, localSize, element.distortionCurve);
                     }
 
                     var flareData0 =
-                        VRLensFlareCore.GetFlareData(screenPos, element.TranslationScale, rayOff, vScreenRatio, rotation, position, angularOffset, element.PositionOffset, element.AutoRotate);
+                        VRLensFlareCore.GetFlareData(screenPos, element.translationScale, rayOff, vScreenRatio, rotation, position, angularOffset, element.positionOffset, element.autoRotate);
 
-                    MaterialPropertyBlock.SetTexture("_BaseMap", element.LensFlareTexture);
-                    MaterialPropertyBlock.SetColor("_BaseColor", curColor);
+                    MaterialPropertyBlock.SetTexture("_BaseMap", element.lensFlareTexture);
+                    MaterialPropertyBlock.SetColor("_BaseColor", currentColor);
                     MaterialPropertyBlock.SetVector("_EyePositions", new Vector4(leftEyePosition.x, leftEyePosition.y, rightEyePosition.x, rightEyePosition.y));
                     MaterialPropertyBlock.SetFloat("_Intensity", currentIntensity);
                     MaterialPropertyBlock.SetVector("_FlareData0", flareData0);
@@ -225,24 +225,23 @@ namespace AleVerDes.VRLensFlares
 
                     Vector2 ComputeLocalSize(Vector2 rayOff, Vector2 rayOff0, Vector2 curSize, AnimationCurve distortionCurve)
                     {
-                        // var rayOffZ = VRSimpleLensFlareCore.GetLensFlareRayOffset(screenPos, position, globalCos0, globalSin0);
                         Vector2 localRadPos;
                         float localRadius;
-                        if (!element.DistortionRelativeToCenter)
+                        if (!element.distortionRelativeToCenter)
                         {
                             localRadPos = (rayOff - rayOff0) * 0.5f;
-                            localRadius = Mathf.Clamp01(Mathf.Max(Mathf.Abs(localRadPos.x), Mathf.Abs(localRadPos.y))); // l1 norm (instead of l2 norm)
+                            localRadius = Mathf.Clamp01(Mathf.Max(Mathf.Abs(localRadPos.x), Mathf.Abs(localRadPos.y)));
                         }
                         else
                         {
-                            localRadPos = screenPos + (rayOff + new Vector2(element.PositionOffset.x, -element.PositionOffset.y)) * element.TranslationScale;
-                            localRadius = Mathf.Clamp01(localRadPos.magnitude); // l2 norm (instead of l1 norm)
+                            localRadPos = screenPos + (rayOff + new Vector2(element.positionOffset.x, -element.positionOffset.y)) * element.translationScale;
+                            localRadius = Mathf.Clamp01(localRadPos.magnitude);
                         }
 
                         var localLerpValue = Mathf.Clamp01(distortionCurve.Evaluate(localRadius));
                         return new Vector2(
-                            Mathf.Lerp(curSize.x, element.TargetSizeDistortion.x * combinedScale / usedAspectRatio, localLerpValue),
-                            Mathf.Lerp(curSize.y, element.TargetSizeDistortion.y * combinedScale, localLerpValue));
+                            Mathf.Lerp(curSize.x, element.targetSizeDistortion.x * combinedScale / usedAspectRatio, localLerpValue),
+                            Mathf.Lerp(curSize.y, element.targetSizeDistortion.y * combinedScale, localLerpValue));
                     }
                 }
             }
